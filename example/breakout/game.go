@@ -3,7 +3,7 @@ package breakout
 import (
 	"github.com/go-gl/glfw/v3.2/glfw"
 	"github.com/go-gl/mathgl/mgl32"
-	"github.com/jakecoffman/learnopengl/breakout/eng"
+	"github.com/jakecoffman/gam"
 	"math"
 )
 
@@ -18,10 +18,10 @@ type Game struct {
 	Player *Object
 	Ball   *Ball
 
-	*eng.ResourceManager
-	ParticleGenerator *eng.ParticleGenerator
-	SpriteRenderer    *eng.SpriteRenderer
-	TextRenderer      *eng.TextRenderer
+	*gam.ResourceManager
+	ParticleGenerator *gam.ParticleGenerator
+	SpriteRenderer    *gam.SpriteRenderer
+	TextRenderer      *gam.TextRenderer
 }
 
 // Game state
@@ -42,12 +42,12 @@ func (g *Game) New(w, h int, window *glfw.Window) {
 	g.Width = w
 	g.Height = h
 	g.Keys = [1024]bool{}
-	g.ResourceManager = eng.NewResourceManager()
+	g.ResourceManager = gam.NewResourceManager()
 
 	width, height := float32(g.Width), float32(g.Height)
 
-	g.LoadShader("breakout/shaders/main.vs.glsl", "breakout/shaders/main.fs.glsl", "sprite")
-	g.LoadShader("breakout/shaders/particle.vs.glsl", "breakout/shaders/particle.fs.glsl", "particle")
+	g.LoadShader("example/shaders/main.vs.glsl", "example/shaders/main.fs.glsl", "sprite")
+	g.LoadShader("example/shaders/particle.vs.glsl", "example/shaders/particle.fs.glsl", "particle")
 
 	projection := mgl32.Ortho(0, width, height, 0, -1, 1)
 	g.Shader("sprite").Use().
@@ -57,22 +57,22 @@ func (g *Game) New(w, h int, window *glfw.Window) {
 		SetInt("sprite", 0).
 		SetMat4("projection", projection)
 
-	g.LoadTexture("breakout/textures/background.jpg", "background")
-	g.LoadTexture("breakout/textures/paddle.png", "paddle")
-	g.LoadTexture("breakout/textures/particle.png", "particle")
-	g.LoadTexture("breakout/textures/awesomeface.png", "face")
-	block, _ := g.LoadTexture("breakout/textures/block.png", "block")
-	solid, _ := g.LoadTexture("breakout/textures/block_solid.png", "block_solid")
+	g.LoadTexture("example/textures/background.jpg", "background")
+	g.LoadTexture("example/textures/paddle.png", "paddle")
+	g.LoadTexture("example/textures/particle.png", "particle")
+	g.LoadTexture("example/textures/awesomeface.png", "face")
+	block, _ := g.LoadTexture("example/textures/block.png", "block")
+	solid, _ := g.LoadTexture("example/textures/block_solid.png", "block_solid")
 
-	shader, _ := g.LoadShader("breakout/shaders/text.vs.glsl", "breakout/shaders/text.fs.glsl", "text")
-	g.TextRenderer = eng.NewTextRenderer(shader, width, height, "breakout/textures/Roboto-Light.ttf", 24)
+	shader, _ := g.LoadShader("example/shaders/text.vs.glsl", "example/shaders/text.fs.glsl", "text")
+	g.TextRenderer = gam.NewTextRenderer(shader, width, height, "example/textures/Roboto-Light.ttf", 24)
 	g.TextRenderer.SetColor(1, 1, 1, 1)
 
-	g.ParticleGenerator = eng.NewParticleGenerator(g.Shader("particle"), g.Texture("particle"), 500)
-	g.SpriteRenderer = eng.NewSpriteRenderer(g.Shader("sprite"))
+	g.ParticleGenerator = gam.NewParticleGenerator(g.Shader("particle"), g.Texture("particle"), 500)
+	g.SpriteRenderer = gam.NewSpriteRenderer(g.Shader("sprite"))
 
 	one := NewLevel(block, solid)
-	if err := one.Load("breakout/levels/1.txt", g.Width, int(float32(g.Height)*0.5)); err != nil {
+	if err := one.Load(level1Layout, g.Width, int(float32(g.Height)*0.5)); err != nil {
 		panic(err)
 	}
 	g.Levels = append(g.Levels, one)
@@ -113,7 +113,7 @@ func (g *Game) Update(dt float32) {
 
 func (g *Game) Render() {
 	if g.state == stateActive {
-		g.SpriteRenderer.DrawSprite(g.Texture("background"), Vec2(0, 0), Vec2(g.Width, g.Height), 0, eng.DefaultColor)
+		g.SpriteRenderer.DrawSprite(g.Texture("background"), Vec2(0, 0), Vec2(g.Width, g.Height), 0, gam.DefaultColor)
 		g.Levels[g.Level].Draw(g.SpriteRenderer)
 		g.Player.Draw(g.SpriteRenderer)
 		g.ParticleGenerator.Draw()
@@ -164,7 +164,7 @@ func (g *Game) unpause() {
 
 func (g *Game) resetLevel() {
 	if g.Level == 0 {
-		g.Levels[0].Load("breakout/level1.txt", g.Width, int(float32(g.Height)*0.5))
+		g.Levels[0].Load("example/level1.txt", g.Width, int(float32(g.Height)*0.5))
 	}
 	// TODO
 }
@@ -269,3 +269,14 @@ func vectorDirection(target mgl32.Vec2) Direction {
 	}
 	return Direction(bestMatch)
 }
+
+const level1Layout = `
+5 5 5 5 5 5 5 5 5 5 5 5 5 5 5
+5 5 5 5 5 5 5 5 5 5 5 5 5 5 5
+4 4 4 4 4 0 0 0 0 0 4 4 4 4 4
+4 1 4 1 4 0 0 1 0 0 4 1 4 1 4
+3 3 3 3 3 0 0 0 0 0 3 3 3 3 3
+3 3 1 3 3 3 3 3 3 3 3 3 1 3 3
+2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+`

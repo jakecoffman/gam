@@ -3,8 +3,7 @@ package breakout
 import (
 	"bufio"
 	"fmt"
-	"github.com/jakecoffman/learnopengl/breakout/eng"
-	"os"
+	"github.com/jakecoffman/gam"
 	"strconv"
 	"strings"
 
@@ -13,10 +12,10 @@ import (
 
 type Level struct {
 	Bricks       []*Object
-	block, solid *eng.Texture2D
+	block, solid *gam.Texture2D
 }
 
-func NewLevel(block, solid *eng.Texture2D) *Level {
+func NewLevel(block, solid *gam.Texture2D) *Level {
 	return &Level{
 		Bricks: []*Object{},
 		block:  block,
@@ -24,17 +23,11 @@ func NewLevel(block, solid *eng.Texture2D) *Level {
 	}
 }
 
-func (l *Level) Load(file string, lvlWidth, lvlHeight int) error {
+func (l *Level) Load(level string, lvlWidth, lvlHeight int) error {
 	l.Bricks = l.Bricks[:0]
 
-	f, err := os.Open(file)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
 	var tileData [][]int
-	scanner := bufio.NewScanner(f)
+	scanner := bufio.NewScanner(strings.NewReader(strings.TrimPrefix(level, "\n")))
 	for scanner.Scan() {
 		parts := strings.Split(scanner.Text(), " ")
 		var row []int
@@ -56,7 +49,7 @@ func (l *Level) Load(file string, lvlWidth, lvlHeight int) error {
 	return nil
 }
 
-func (l *Level) Draw(renderer *eng.SpriteRenderer) {
+func (l *Level) Draw(renderer *gam.SpriteRenderer) {
 	for _, tile := range l.Bricks {
 		if !tile.Destroyed {
 			tile.Draw(renderer)

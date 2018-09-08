@@ -2,9 +2,8 @@ package breakout
 
 import (
 	"fmt"
-	"github.com/jakecoffman/learnopengl/breakout/eng"
-
 	"github.com/go-gl/mathgl/mgl32"
+	"github.com/jakecoffman/gam"
 )
 
 type Object struct {
@@ -14,7 +13,7 @@ type Object struct {
 
 	IsSolid, Destroyed bool
 
-	Sprite *eng.Texture2D
+	Sprite *gam.Texture2D
 }
 
 func (o Object) String() string {
@@ -25,7 +24,7 @@ var (
 	DefaultGameObjectColor = mgl32.Vec3{1, 1, 1}
 )
 
-func NewGameObject(pos, size mgl32.Vec2, sprite *eng.Texture2D) *Object {
+func NewGameObject(pos, size mgl32.Vec2, sprite *gam.Texture2D) *Object {
 	return &Object{
 		pos,
 		size,
@@ -38,6 +37,6 @@ func NewGameObject(pos, size mgl32.Vec2, sprite *eng.Texture2D) *Object {
 	}
 }
 
-func (o *Object) Draw(renderer *eng.SpriteRenderer) {
+func (o *Object) Draw(renderer *gam.SpriteRenderer) {
 	renderer.DrawSprite(o.Sprite, o.Position, o.Size, o.Rotation, o.Color)
 }

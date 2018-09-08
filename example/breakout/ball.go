@@ -2,7 +2,7 @@ package breakout
 
 import (
 	"github.com/go-gl/mathgl/mgl32"
-	"github.com/jakecoffman/learnopengl/breakout/eng"
+	"github.com/jakecoffman/gam"
 )
 
 type Ball struct {
@@ -12,7 +12,7 @@ type Ball struct {
 	Stuck  bool
 }
 
-func NewBall(pos mgl32.Vec2, radius float32, velocity mgl32.Vec2, sprite *eng.Texture2D) *Ball {
+func NewBall(pos mgl32.Vec2, radius float32, velocity mgl32.Vec2, sprite *gam.Texture2D) *Ball {
 	ball := &Ball{}
 	ball.Object = NewGameObject(pos, mgl32.Vec2{float32(radius * 2), float32(radius * 2)}, sprite)
 	ball.Color = mgl32.Vec3{1, 1, 1}
