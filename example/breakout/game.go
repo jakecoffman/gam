@@ -5,6 +5,7 @@ import (
 	"github.com/go-gl/mathgl/mgl32"
 	"github.com/jakecoffman/gam"
 	"math"
+	"os"
 )
 
 type Game struct {
@@ -46,8 +47,21 @@ func (g *Game) New(w, h int, window *glfw.Window) {
 
 	width, height := float32(g.Width), float32(g.Height)
 
-	g.LoadShader("example/shaders/main.vs.glsl", "example/shaders/main.fs.glsl", "sprite")
-	g.LoadShader("example/shaders/particle.vs.glsl", "example/shaders/particle.fs.glsl", "particle")
+	const shaderDir = "shaders/"
+	const textureDir = "textures/"
+	basePath := ""
+	if _, err := os.Stat(shaderDir + "sprite.vs.glsl"); os.IsNotExist(err) {
+		basePath = "example/"
+		if _, err := os.Stat(basePath + shaderDir + "sprite.vs.glsl"); os.IsNotExist(err) {
+			panic("assets can't be found, run from gam or example directories")
+		}
+	}
+
+	shaderPath := basePath + shaderDir
+	_, err := g.LoadShadersPath(shaderPath)
+	if err != nil {
+		panic(err)
+	}
 
 	projection := mgl32.Ortho(0, width, height, 0, -1, 1)
 	g.Shader("sprite").Use().
@@ -57,21 +71,19 @@ func (g *Game) New(w, h int, window *glfw.Window) {
 		SetInt("sprite", 0).
 		SetMat4("projection", projection)
 
-	g.LoadTexture("example/textures/background.jpg", "background")
-	g.LoadTexture("example/textures/paddle.png", "paddle")
-	g.LoadTexture("example/textures/particle.png", "particle")
-	g.LoadTexture("example/textures/awesomeface.png", "face")
-	block, _ := g.LoadTexture("example/textures/block.png", "block")
-	solid, _ := g.LoadTexture("example/textures/block_solid.png", "block_solid")
+	texturePath := basePath + textureDir
+	_, err = g.LoadTexturesPath(texturePath)
+	if err != nil {
+		panic(err)
+	}
 
-	shader, _ := g.LoadShader("example/shaders/text.vs.glsl", "example/shaders/text.fs.glsl", "text")
-	g.TextRenderer = gam.NewTextRenderer(shader, width, height, "example/textures/Roboto-Light.ttf", 24)
+	g.TextRenderer = gam.NewTextRenderer(g.Shader("text"), width, height, texturePath + "Roboto-Light.ttf", 24)
 	g.TextRenderer.SetColor(1, 1, 1, 1)
 
 	g.ParticleGenerator = gam.NewParticleGenerator(g.Shader("particle"), g.Texture("particle"), 500)
 	g.SpriteRenderer = gam.NewSpriteRenderer(g.Shader("sprite"))
 
-	one := NewLevel(block, solid)
+	one := NewLevel(g.Texture("block"), g.Texture("block_solid"))
 	if err := one.Load(level1Layout, g.Width, int(float32(g.Height)*0.5)); err != nil {
 		panic(err)
 	}
@@ -81,7 +93,7 @@ func (g *Game) New(w, h int, window *glfw.Window) {
 	g.Player = NewGameObject(playerPos, playerSize, g.Texture("paddle"))
 
 	ballPos := playerPos.Add(mgl32.Vec2{playerSize.X()/2.0 - float32(ballRadius), float32(-ballRadius * 2)})
-	g.Ball = NewBall(ballPos, ballRadius, initialBallVelocity, g.Texture("face"))
+	g.Ball = NewBall(ballPos, ballRadius, initialBallVelocity, g.Texture("awesomeface"))
 
 	g.state = stateActive
 
