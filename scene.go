@@ -42,7 +42,7 @@ func Run(scene Scene, width, height int) {
 		panic(err)
 	}
 
-	gl.Enable(gl.CULL_FACE)
+	gl.Viewport(0, 0, int32(width*2), int32(height*2))
 	gl.Enable(gl.BLEND)
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
