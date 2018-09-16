@@ -12,5 +12,5 @@ const (
 
 func main() {
 	Breakout := &breakout.Game{}
-	gam.Run(Breakout, width, height)
+	gam.Run(Breakout, 1./60, width, height)
 }

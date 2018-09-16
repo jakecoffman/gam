@@ -99,5 +99,5 @@ func (g *Game) Close() {
 
 func main() {
 	game := &Game{}
-	gam.Run(game, 800, 600)
+	gam.Run(game, 1./60., 800, 600)
 }

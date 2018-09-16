@@ -2,11 +2,9 @@ package gam
 
 import (
 	"fmt"
-	"runtime"
-	"time"
-
 	"github.com/go-gl/gl/v3.3-core/gl"
 	"github.com/go-gl/glfw/v3.2/glfw"
+	"runtime"
 )
 
 type Scene interface {
@@ -16,10 +14,12 @@ type Scene interface {
 	Close()
 }
 
-func Run(scene Scene, width, height int) {
+func Run(scene Scene, tickRate float32, width, height int) {
+	if tickRate == 0 {
+		panic("Tickrate must be > 0, try 1./60.")
+	}
 	runtime.LockOSThread()
 
-	// glfw: initialize and configure
 	glfw.Init()
 	defer glfw.Terminate()
 	glfw.WindowHint(glfw.ContextVersionMajor, 3)
@@ -46,34 +46,35 @@ func Run(scene Scene, width, height int) {
 	gl.Enable(gl.BLEND)
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
-	deltaTime := 0.5
-	lastFrame := 0.0
-
-	frames := 0
-	showFps := time.Tick(1 * time.Second)
-
 	scene.New(width, height, window)
+
+	var frames int
+	var dt, accumulator float64
+	tickRate64 := float64(tickRate)
+	lastFrame := glfw.GetTime()
+	lastFPS := lastFrame
 
 	for !window.ShouldClose() {
 		currentFrame := glfw.GetTime()
 		frames++
-		select {
-		case <-showFps:
+		if currentFrame - lastFPS > 1 {
 			window.SetTitle(fmt.Sprintf("Breakout | %d FPS", frames))
 			frames = 0
-		default:
+			lastFPS = currentFrame
 		}
-		deltaTime = currentFrame - lastFrame
+		dt = currentFrame - lastFrame
 		lastFrame = currentFrame
-		glfw.PollEvents()
 
-		scene.Update(float32(deltaTime))
+		for accumulator += dt; accumulator > tickRate64; accumulator -= tickRate64 {
+			scene.Update(tickRate)
+		}
 
 		gl.ClearColor(0, 0, 0, 0.5)
 		gl.Clear(gl.COLOR_BUFFER_BIT)
 
 		scene.Render()
 		window.SwapBuffers()
+		glfw.PollEvents()
 	}
 
 	scene.Close()
